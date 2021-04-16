@@ -23,6 +23,7 @@ def main():
         id_server = 0
         TIMEOUT = False
         manda_dnv = 0
+        inativo = False
 
         if request == "S":
             comeco = True
@@ -155,13 +156,19 @@ def main():
                         #com.sendData(header)
                         #com.sendData(payload)
                         #com.sendData(eop)
+                        
 
-                        RespHeaderServer, HeaderRxBuffer = com.getData(10)
-                        print("RespHeaderServer: ", RespHeaderServer[0])
-                        print("HeaderRxBuffer", HeaderRxBuffer)
+                        try:
+                            RespHeaderServer, HeaderRxBuffer = com.getData(10)
+                            print("RespHeaderServer: ", RespHeaderServer[0])
+                            print("HeaderRxBuffer", HeaderRxBuffer)
 
-                        log.write("{} / recebimento / 4 / {}\n".format(datetime.datetime.now(), (RespHeaderServer[0])))
-                        print("{} / recebimento / 4 / {}\n".format(datetime.datetime.now(), (RespHeaderServer[0])))
+                            log.write("{} / recebimento / 4 / {}\n".format(datetime.datetime.now(), (RespHeaderServer[0])))
+                            print("{} / recebimento / 4 / {}\n".format(datetime.datetime.now(), (RespHeaderServer[0])))
+                        except: 
+                            time.sleep(5)
+                            inativo = True
+                        
 
                         # TIMEOUT = True
                         # ESTADO = "DESCONECTADO"
@@ -169,15 +176,13 @@ def main():
                         # print(RespEOPServer[0])
 
 
-                        if RespHeaderServer[0] == 0: #MUDAR PRA 6 ; ERRO 2  
+                        if inativo:
 
                             manda_dnv += 1
                             if manda_dnv > 4:
                                 print("Desligando server dps de 20 segundos.")
                                 raise Exception("passaram 20 segs.")
 
-                            time.sleep(5)
-                            
                             header = makeHeader(3, 0, id_server, pacotes_total, pacote_atual, 114, pacote_atual, pacote_atual-1, 0, 0)
                             payload = txBuffer[cont:cont+114]
                             eop2 = (0).to_bytes(4, byteorder="big")
